@@ -20,7 +20,7 @@ env:
 baseline: 
   discount: 0.98
   alpha: 0.01
-  num_steps: 10000
+  num_steps: 100000
   epsilon: 0.05
 
   show_rewards: yes
@@ -28,7 +28,7 @@ baseline:
   show_trajectory: yes
 
 freetime:
-  num_steps: 10000
+  num_steps: 100000
   epsilon: 0.05
   discount: 0.98
   alpha: 0.01
@@ -47,7 +47,7 @@ trajectory_maps:
   num_plots: 2
 
 q_plots:
-  vmin: 0.8
+  vmin: 0
   vmax: 1
 
 f_plots: 

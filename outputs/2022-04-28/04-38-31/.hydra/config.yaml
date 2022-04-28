@@ -1,0 +1,56 @@
+initializations:
+- random
+- pessimistic
+- optimistic
+random_initialization_seed: null
+num_runs: 10
+offset: -0.001
+env:
+  height: 20
+  width: 11
+  rewards:
+  - - 1
+    - 10
+    - 5
+  wind: false
+  start: random
+  allowed_actions:
+  - L
+  - R
+  - U
+  - D
+  - UL
+  - UR
+  - DL
+  - DR
+  reward_terminates_episode: true
+baseline:
+  discount: 0.98
+  alpha: 0.01
+  num_steps: 100000
+  epsilon: 0.05
+  show_rewards: true
+  show_q: true
+  show_trajectory: false
+freetime:
+  num_steps: 100000
+  epsilon: 0.05
+  discount: 0.98
+  alpha: 0.01
+  alpha_f: 0.01
+  tolerance: 0.001
+  show_rewards: true
+  show_q: true
+  show_f: false
+  show_f_actions:
+  - min
+  show_trajectory: false
+trajectory_maps:
+  num_plots: 2
+q_plots:
+  vmin: 0
+  vmax: 1
+f_plots:
+  vmin: null
+  vmax: null
+plot_freetime_vs_baseline_same_table: true

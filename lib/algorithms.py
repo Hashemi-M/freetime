@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 def build_q_table(state_shape: Tuple[int], num_actions: Tuple[int], 
                   initialization: Literal['random', 'pessimistic', 'optimistic'] = 'pessimistic', 
-                  seed=None):
+                  seed=None, max_reward = 1):
     
     shape = (*state_shape, num_actions)
     
@@ -21,8 +21,10 @@ def build_q_table(state_shape: Tuple[int], num_actions: Tuple[int],
     elif initialization == 'pessimistic': 
         return np.zeros(shape)
     
-    elif initialization == 'optimistic': 
-        return np.ones(shape)
+    elif initialization == 'optimistic':
+        Q = np.ones(shape)
+        Q = max_reward*Q
+        return Q
 
 
 def select_greedy(Q: np.ndarray, state: Union[int, Tuple[int, int]]): 
@@ -90,6 +92,56 @@ def Q_learn(env, Q, num_steps, epsilon, discount, alpha):
 def Q_learn_freetime(env, Q, num_steps, epsilon, discount, alpha, alpha_f, tolerance):
     
     F = np.ones_like(Q)
+
+    
+    
+    rewards = np.zeros(num_steps)
+    freetime_rewards = np.zeros(num_steps)
+    
+    state = env.reset()
+    
+    for step in tqdm(range(num_steps)):
+        
+        action = select_epsilon_greedy_freetime(Q, F, state, epsilon)
+        
+        new_state, reward, terminal_state, info = env.step(action)
+        
+        if terminal_state:
+            q_target = reward
+        else: 
+            q_target = reward + discount * Q[new_state].max()
+        
+        if terminal_state:
+            if reward == 0:
+                freetime_reward = 0
+                freetime_target = 0
+            else:
+                freetime_reward = 1
+                freetime_target = 1
+        else:
+            new_Q = Q[new_state].max() * discount
+            old_Q = Q[state].max()
+            freetime_reward = 1 if reward + new_Q + tolerance >= old_Q else 0
+            freetime_target = freetime_reward + F[new_state].max() if freetime_reward == 1 else 0
+        
+        Q[state][action] = (1 - alpha) * Q[state][action] + alpha * q_target
+        F[state][action] = (1 - alpha_f) * F[state][action] + alpha_f * freetime_target
+        
+        rewards[step] = reward
+        freetime_rewards[step] = freetime_reward
+        
+        if terminal_state:
+            state = env.reset()
+        else: 
+            state = new_state
+            
+    return Q, F, np.cumsum(rewards), np.cumsum(freetime_rewards)
+
+def freetime_ratio(env, Q, num_steps, epsilon, discount, alpha, alpha_f, tolerance):
+    
+
+    F = np.ones_like(Q)
+
     
     rewards = np.zeros(num_steps)
     freetime_rewards = np.zeros(num_steps)
@@ -113,7 +165,11 @@ def Q_learn_freetime(env, Q, num_steps, epsilon, discount, alpha, alpha_f, toler
         else:
             new_Q = Q[new_state].max() * discount
             old_Q = Q[state].max()
-            freetime_reward = 1 if reward + new_Q + tolerance >= old_Q else 0
+
+            #RATIO
+            ratio = old_Q / (new_Q + tolerance)
+            freetime_reward = 1 if ratio <= 1 else 0
+            
             freetime_target = freetime_reward + F[new_state].max() if freetime_reward == 1 else 0
         
         Q[state][action] = (1 - alpha) * Q[state][action] + alpha * q_target

@@ -18,7 +18,7 @@ def plot_F(F, title, vmin, vmax, action='max'):
     plt.figure()
     if action == 'max':
         plt.imshow(F.max(axis=-1), vmin=vmin, vmax=vmax)
-    if action == 'min':
+    elif action == 'min':
         plt.imshow(F.min(axis=-1), vmin=vmin, vmax=vmax)
     else:
         plt.imshow(F[..., action], vmin=vmin, vmax=vmax)

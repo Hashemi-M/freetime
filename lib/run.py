@@ -38,7 +38,7 @@ def plot_errorbars(values, label):
 def run(config):
     
     from .gym_windy_gridworld import WindyGridworld
-    from .algorithms import Q_learn, Q_learn_freetime, build_q_table
+    from .algorithms import Q_learn, Q_learn_freetime, build_q_table, build_f_table
     
     INITIALIZATIONS = config.initializations
     
@@ -115,6 +115,7 @@ def run(config):
     for initialization in INITIALIZATIONS:
         
         for run in range(config.num_runs):
+            # Build Q table
             Q = build_q_table(
                 (env.height, env.width),                
                 env.action_space.n, 
@@ -122,10 +123,16 @@ def run(config):
                 seed = config.random_initialization_seed, # type: ignore
                 max_reward = max_r
             )
+            # Build F table
+            F = build_f_table(
+                Q,
+                init = config.f_table_init
+            )
             
             Q, F, rewards, _ = Q_learn_freetime(
                 env, 
-                Q, 
+                Q,
+                F,
                 config.freetime.num_steps, 
                 config.freetime.epsilon, 
                 config.freetime.discount, 

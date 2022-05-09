@@ -26,6 +26,44 @@ def build_q_table(state_shape: Tuple[int], num_actions: Tuple[int],
         Q = max_reward*Q
         return Q
 
+def build_f_table(Q, 
+                  init: Literal['random', 'ones', '0_to_20', 'greater_than_one'] = 'ones', 
+                  seed=None):
+    
+    if init == 'ones':
+        F = np.ones_like(Q)
+    
+    elif init == 'random':
+        if seed is not None:
+            rng = np.random.RandomState(seed)
+
+            F = rng.rand(*Q.shape)
+        else: 
+            F = np.random.rand(*Q.shape)
+
+    elif init == '0_to_20': 
+        if seed is not None:
+            rng = np.random.RandomState(seed)
+
+            F = rng.rand(*Q.shape)
+            F = F * 20
+        else: 
+            F = np.random.rand(*Q.shape)
+            F = F * 20
+    
+    elif init == 'greater_than_one':
+        if seed is not None:
+            rng = np.random.RandomState(seed)
+
+            F = rng.rand(*Q.shape)
+            F = F + 1
+        else: 
+            F = np.random.rand(*Q.shape)
+            F = F + 1
+        
+
+    return F
+
 
 def select_greedy(Q: np.ndarray, state: Union[int, Tuple[int, int]]): 
     
@@ -89,10 +127,7 @@ def Q_learn(env, Q, num_steps, epsilon, discount, alpha):
     return Q, np.cumsum(rewards)
     
     
-def Q_learn_freetime(env, Q, num_steps, epsilon, discount, alpha, alpha_f, tolerance):
-    
-    F = np.ones_like(Q)
-
+def Q_learn_freetime(env, Q, F, num_steps, epsilon, discount, alpha, alpha_f, tolerance):
     
     
     rewards = np.zeros(num_steps)

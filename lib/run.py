@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from lib.algorithms import  freetime_no_reward
 from .utils import make_trajectory_map
 import numpy as np
+import os
+dirname = os.path.dirname(__file__)
 
 
 def plot_Q(Q, title, vmin, vmax):
@@ -11,6 +13,8 @@ def plot_Q(Q, title, vmin, vmax):
     plt.imshow(Q.max(axis=-1), vmin=vmin, vmax=vmax, cmap='jet')
     plt.title(title)
     plt.colorbar()
+    filename = os.path.join(dirname, f'plots\{title}.png')     
+    plt.savefig(fname = filename, bbox_inches = 'tight')
 
 
 def plot_F(F, title, vmin, vmax, action='max'): 
@@ -22,7 +26,9 @@ def plot_F(F, title, vmin, vmax, action='max'):
     else:
         plt.imshow(F[..., action], vmin=vmin, vmax=vmax)
     plt.title(title)
-    plt.colorbar    
+    plt.colorbar
+    filename = os.path.join(dirname, f'plots\{title}.png')     
+    plt.savefig(fname = filename, bbox_inches = 'tight')
   
     
 def plot_errorbars(values, label):
@@ -87,7 +93,8 @@ def run(config):
             
             results_baseline[initialization].append(rewards)
             Q_tables[initialization] = Q
-            
+
+
     if config.baseline.show_trajectory:
         for initialization, Q in Q_tables.items():
             make_trajectory_map(Q, env, title=f'Init {initialization} baseline trajectory', 
@@ -105,74 +112,92 @@ def run(config):
             plot_Q(Q, f'{title} init q-table baseline', config.q_plots.vmin, config.q_plots.vmax)
  
     print('Running freetime')
+    F_INITIALIZATIONS = config.f_initializations
     
     results_freetime = {
-        initialization: [] for initialization in INITIALIZATIONS
+        initialization: {f_initialization: [] for f_initialization in F_INITIALIZATIONS} for initialization in INITIALIZATIONS
     }
-    Q_tables = {}
-    F_tables = {}
+    Q_tables = {
+        initialization: {f_initialization: [] for f_initialization in F_INITIALIZATIONS} for initialization in INITIALIZATIONS
+    }
+    F_tables = {
+        initialization: {f_initialization: [] for f_initialization in F_INITIALIZATIONS} for initialization in INITIALIZATIONS
+    }
     
+    # For each init of the Q table
     for initialization in INITIALIZATIONS:
+        # For each init of F table
+        for f_initialization in F_INITIALIZATIONS:
+
+            for run in range(config.num_runs):
+                # Build Q table
+                Q = build_q_table(
+                    (env.height, env.width),                
+                    env.action_space.n, 
+                    initialization = initialization, 
+                    seed = config.random_initialization_seed, # type: ignore
+                    max_reward = max_r
+                )
+                # Build F table
+                F = build_f_table(
+                    Q,
+                    init = f_initialization
+                )
+                
+                Q, F, rewards, _ = Q_learn_freetime(
+                    env, 
+                    Q,
+                    F,
+                    config.freetime.num_steps, 
+                    config.freetime.epsilon, 
+                    config.freetime.discount, 
+                    config.freetime.alpha, 
+                    config.freetime.alpha_f, 
+                    config.freetime.tolerance
+                )
+                
+                results_freetime[initialization][f_initialization].append(rewards)
+                Q_tables[initialization][f_initialization] = Q
+                F_tables[initialization][f_initialization] = F
         
-        for run in range(config.num_runs):
-            # Build Q table
-            Q = build_q_table(
-                (env.height, env.width),                
-                env.action_space.n, 
-                initialization = initialization, 
-                seed = config.random_initialization_seed, # type: ignore
-                max_reward = max_r
-            )
-            # Build F table
-            F = build_f_table(
-                Q,
-                init = config.f_table_init
-            )
-            
-            Q, F, rewards, _ = Q_learn_freetime(
-                env, 
-                Q,
-                F,
-                config.freetime.num_steps, 
-                config.freetime.epsilon, 
-                config.freetime.discount, 
-                config.freetime.alpha, 
-                config.freetime.alpha_f, 
-                config.freetime.tolerance
-            )
-            
-            results_freetime[initialization].append(rewards)
-            Q_tables[initialization] = Q
-            F_tables[initialization] = F
-        
+    '''
     if config.freetime.show_trajectory: 
         for initialization, Q in Q_tables.items():
             make_trajectory_map(Q, env, title=f'Init {initialization} freetime trajectory', 
-                                num_plots=config.trajectory_maps.num_plots)
-    
+                                num_plots=config.trajectory_maps.num_plots)'''
+    '''
     if config.freetime.show_rewards: 
         plt.figure()
         for title, rewards in results_freetime.items():
             plot_errorbars(rewards, label=title)
             plt.legend()
-            plt.title('freetime results_freetime')
+            plt.title('freetime results_freetime')'''
         
     if config.freetime.show_q:
-        for title, Q in Q_tables.items():
-            plot_Q(Q, f'{title} init q-table freetime', config.q_plots.vmin, config.q_plots.vmax)
+        for title, f_init in Q_tables.items():
+            for init, Q in f_init.items():
+                plot_Q(Q, f'{title} init q-table with freetime-{init}', config.q_plots.vmin, config.q_plots.vmax)
+
         
     if config.freetime.show_f:
         for action in config.freetime.show_f_actions:
-            for title, F in F_tables.items():
-                plot_F(F, f'{title} init f-table freetime action {action}', config.f_plots.vmin, config.f_plots.vmax, 
+            for title, f_init in F_tables.items():
+                for init, F in f_init.items():
+                    plot_F(F, f'{title} init F-table action {action} with freetime-{init}', config.f_plots.vmin, config.f_plots.vmax, 
                        action)
     if config.plot_freetime_vs_baseline_same_table:
         for initialization in INITIALIZATIONS:
             plt.figure()
             plot_errorbars(results_baseline[initialization], label='baseline')
-            plot_errorbars(results_freetime[initialization], label='freetime')
+            for f_init in F_INITIALIZATIONS:
+
+                plot_errorbars(results_freetime[initialization][f_init], label= f'freetime-{f_init}')
+                
             plt.title(f'{initialization} initialization')
             plt.legend()
+            filename = os.path.join(dirname, f'plots\{initialization}_scores.png')
+
+            plt.savefig(fname = filename, bbox_inches = 'tight')
         
        
     plt.show()

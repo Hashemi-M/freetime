@@ -27,7 +27,7 @@ def build_q_table(state_shape: Tuple[int], num_actions: Tuple[int],
         return Q
 
 def build_f_table(Q, 
-                  init: Literal['random', 'ones', '0_to_20', 'greater_than_one'] = 'ones', 
+                  init: Literal['random', 'ones', '0_to_20', 'greater_than_one', 'zeros'] = 'ones', 
                   seed=None):
     
     if init == 'ones':
@@ -60,6 +60,11 @@ def build_f_table(Q,
         else: 
             F = np.random.rand(*Q.shape)
             F = F + 1
+    elif init == 'zeros':
+        F = np.zeros_like(Q)
+    elif init == 'twenty':
+        F = 20 * np.ones_like(Q)
+
         
 
     return F

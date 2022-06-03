@@ -99,7 +99,7 @@ class WindyGridworld(Env):
         if x < 0: return True
         if y < 0: return True 
         if x >= self.height: return True 
-        if y >= self.width: return True 
+        if y >= self.width: return True
         
         return False
     
@@ -117,10 +117,12 @@ class WindyGridworld(Env):
                 f'start parameter {self.start} not accepted'
         
         return self.pos
-        
+    
+    
     def render(self, ax=None): 
         
         canvas = np.zeros((self.height, self.width))
+
         for value, x, y in self.rewards:
             canvas[x, y] = value
             

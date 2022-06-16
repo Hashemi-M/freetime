@@ -7,7 +7,7 @@ initializations:
 f_initializations: 
   - ones
   - random 
-  #- 0_to_20
+  - 0_to_20
   - greater_than_one
   - zeros
   - twenty
@@ -16,7 +16,7 @@ random_initialization_seed: null
 
 #f_table_init: 'random'
 
-num_runs: 5
+num_runs: 1
 
 offset: 0.001
 
@@ -32,7 +32,7 @@ env:
 baseline: 
   discount: 0.98
   alpha: 0.01
-  num_steps: 100000
+  num_steps: 300000
   epsilon: 0.05
 
   show_rewards: yes
@@ -40,7 +40,7 @@ baseline:
   show_trajectory: no
 
 freetime:
-  num_steps: 100000
+  num_steps: 300000
   epsilon: 0.05
   discount: 0.98
   alpha: 0.01

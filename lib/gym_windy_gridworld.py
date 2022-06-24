@@ -46,7 +46,7 @@ class WindyGridworld(Env):
         self.width = width 
         self.rewards = rewards
         self.wind = wind 
-        
+        self.claimed = np.ones(len(rewards))
         self.reward_terminates_episode = reward_terminates_episode
         
         assert all(
@@ -82,16 +82,23 @@ class WindyGridworld(Env):
             x -= 1
     
         reward = 0
-        for reward_spec in self.rewards:
+        for i ,reward_spec in enumerate(self.rewards):
             value, x_, y_ = reward_spec
             if (x, y) == (x_, y_): 
                 reward += value
-                
+                self.claimed[i] = 0
+               
         done = self.check_terminal_state(x, y)
         if self.reward_terminates_episode and reward > 0:
             done = True
         
-        self.__pos = (x, y) if not done else None 
+        if sum(self.claimed) == 0:
+            done = True
+            self.claimed = np.ones(len(self.rewards))
+        #self.__pos = (x, y) if not done else None
+        self.__pos = (x, y) 
+
+    
         
         return self.__pos, reward, done, {}
     

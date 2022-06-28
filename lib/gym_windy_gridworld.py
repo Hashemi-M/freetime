@@ -123,6 +123,7 @@ class WindyGridworld(Env):
                 raise KeyError()
                 f'start parameter {self.start} not accepted'
         
+        self.claimed = np.ones(len(self.rewards))
         return self.pos
     
     

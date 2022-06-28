@@ -27,8 +27,12 @@ def main(config):
 
     steps = 100
     i=0
-
+    terminal_state = 1
     while i<steps:
+        if terminal_state or i==0:
+            canvas = visualize(env)
+            plt.imshow(canvas,  interpolation='nearest')
+            plt.show()
         action = np.random.choice(3)
         new_state, reward, terminal_state, info = env.step(action)
         canvas = visualize(env)
@@ -43,8 +47,12 @@ def main(config):
         i += 1
 
     env.reset()
+    canvas = visualize(env)
+    plt.imshow(canvas,  interpolation='nearest')
+    plt.show()
     seq = [0,0,1,1,0,0,0,2,2,2,2,2,2,1,1,1,1,2,1,1]
     for action in seq:
+
         new_state, reward, terminal_state, info = env.step(action)
         canvas = visualize(env)
         plt.imshow(canvas,  interpolation='nearest')

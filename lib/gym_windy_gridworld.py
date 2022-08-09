@@ -95,6 +95,7 @@ class WindyGridworld(Env):
         if sum(self.claimed) == 0:
             done = True
             self.claimed = np.ones(len(self.rewards))
+
         #self.__pos = (x, y) if not done else None
         self.__pos = (x, y) 
 
@@ -124,6 +125,7 @@ class WindyGridworld(Env):
                 f'start parameter {self.start} not accepted'
         
         self.claimed = np.ones(len(self.rewards))
+
         return self.pos
     
     

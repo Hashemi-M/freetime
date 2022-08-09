@@ -8,7 +8,7 @@ import os
 dirname = os.path.dirname(__file__)
 
 
-def visualize(env):
+def visualize(env,Blackbar):
 
 
 
@@ -43,19 +43,17 @@ def visualize(env):
         i += 1
 
 
-    # Add black bars
-    i = 0
     
-    delta = canvas.shape[0] - canvas.shape[1]
-    print(delta)
-    black_bar = np.zeros((env.height + 2, delta//2))
-    print (black_bar.shape)
-    print(canvas[:,:,i].shape)
-    a = np.column_stack((black_bar, canvas[:,:,0],black_bar))
-    b = np.column_stack((black_bar, canvas[:,:,1],black_bar))
-    c = np.column_stack((black_bar, canvas[:,:,2],black_bar))
-    canvas = np.stack([a,b,c],axis=2)
-    i += 1
+    if Blackbar:
+        delta = canvas.shape[0] - canvas.shape[1]
+        print(delta)
+        black_bar = np.zeros((env.height + 2, delta//2))
+        print (black_bar.shape)
+        a = np.column_stack((black_bar, canvas[:,:,0],black_bar))
+        b = np.column_stack((black_bar, canvas[:,:,1],black_bar))
+        c = np.column_stack((black_bar, canvas[:,:,2],black_bar))
+        canvas = np.stack([a,b,c],axis=2)
+
 
 
     r=cv2.resize(canvas[:,:,0], (84, 84),  interpolation=cv2.INTER_NEAREST)

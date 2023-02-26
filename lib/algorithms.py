@@ -1,9 +1,11 @@
-from os import terminal_size
+import os
 from typing import Literal, Tuple, Union
 from matplotlib.pyplot import hist
 import numpy as np
 from .gym_windy_gridworld import WindyGridworld
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+dirname = os.path.dirname(__file__)
 
 def build_q_table(state_shape: Tuple[int], num_actions: Tuple[int], 
                   initialization: Literal['random', 'pessimistic', 'optimistic'] = 'pessimistic', 
@@ -100,11 +102,23 @@ def select_epsilon_greedy_freetime(Q: np.ndarray, F, state, epsilon: float):
     else: 
         return select_greedy(Q, state)
 
+def debug_plot_Q(Q, title):
+    
+
+    plt.imshow(Q.max(axis=-1), cmap='jet')
+    plt.title(title)
+    plt.colorbar()
+    filename = os.path.join(dirname, "pessmax",f'{title}.png',)     
+    plt.savefig(fname = filename, bbox_inches = 'tight')
+    plt.clf()
+
+    
+
 
 def Q_learn(env, Q, num_steps, epsilon, discount, alpha):
     
     rewards = np.zeros(num_steps)
-    
+    plt.figure()
     state = env.reset()
     
     for step in tqdm(range(num_steps)):
@@ -119,7 +133,7 @@ def Q_learn(env, Q, num_steps, epsilon, discount, alpha):
             target = reward + discount * Q[new_state].max()
         
         Q[state][action] = Q[state][action] + alpha * (target - Q[state][action])
-        
+        debug = Q[state][action]
         rewards[step] = reward
         
         if terminal_state:
@@ -128,6 +142,13 @@ def Q_learn(env, Q, num_steps, epsilon, discount, alpha):
             state = new_state
             
         step += 1
+
+        #if step%100 == 0:
+            #title =  f'step_{step}' + f' rewards={np.sum(rewards)}'
+            #debug_plot_Q(Q, title)
+
+
+    
 
     return Q, np.cumsum(rewards)
     

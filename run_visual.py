@@ -139,13 +139,16 @@ def play(config):
                 elif action == 'd':
                     new_state, reward, terminal_state, info = env.step(1)
 
+                if terminal_state:
+                    c=0
+                    pass
 
                 frame = visualize(env,1)
                 plt.imshow(frame)
                 
 
                 if terminal_state:
-                    time.sleep(2)
+                    time.sleep(4)
                     env.reset()
                     frame = visualize(env,1)
                     plt.imshow(frame)

@@ -2,7 +2,6 @@
 
 from turtle import width
 from gym import Env 
-
 from gym.spaces import Tuple, Discrete
 
 import matplotlib.pyplot as plt
